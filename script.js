@@ -72,11 +72,25 @@ const createUsernames = () => {
   });
 };
 
-console.log(accounts);
+createUsernames();
 
 btnLogin.addEventListener("click", (e) => {
-  const username = inputLoginUsername.value.toLowerCase().trim();
+  // Prevent form from submitting (Impedir que se envíe el formulario)
+  e.preventDefault();
+  const username = inputLoginUsername.value;
   const pin = Number(inputLoginPin.value);
 
-  console.log("Login con el usuario ${username} y el pin ${pin}");
+  console.log(`Login con el usuario ${username} y el pin ${pin}`);
+
+  //recorrer todos los accounts y buscar el que coincida con el username y luego comparar con el pin
+
+  const currentAcount = accounts.find(
+    (account) => account.username === username
+  );
+
+  console.log(`Current account: ${currentAcount}`);
+
+  if (currentAcount.pin === pin) {
+    console.log("Pin Correcto");
+  }
 });
