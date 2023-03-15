@@ -88,9 +88,17 @@ btnLogin.addEventListener("click", (e) => {
     (account) => account.username === username
   );
 
+  //Puede ser null si el usuario no existe
+
   console.log(`Current account: ${currentAcount}`);
 
-  if (currentAcount.pin === pin) {
-    console.log("Pin Correcto");
+  // "currentAcount && currentAcount.pin" es lo mismo que poner "currentAcount?.pin" (esta ultima version es la reducida )
+
+  if (currentAcount?.pin === pin) {
+    console.log("Login correcto");
+    labelWelcome.textContent = `Bienvenido ${
+      currentAcount.owner.split(" ")[0]
+    }`;
+    containerApp.style.opacity = 100;
   }
 });
