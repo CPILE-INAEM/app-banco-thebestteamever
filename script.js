@@ -100,5 +100,26 @@ btnLogin.addEventListener("click", (e) => {
       currentAcount.owner.split(" ")[0]
     }`;
     containerApp.style.opacity = 100;
+    //mostrar datos
+    updateUI(currentAcount);
   }
 });
+
+const updateUI = (currentAcount) => {
+  //obtener movimientos
+  const { movements } = currentAcount;
+
+  // mostrar movimientos
+  // displayMovements(movements);
+
+  // mostrar balance
+  calcAndDisplayBalance(movements);
+
+  // mostrar resumen
+  // calcAndDisplaySummary(movements);
+};
+
+const calcAndDisplayBalance = (movements) => {
+  const balance = movements.reduce((acc, mov) => acc + mov, 0);
+  labelBalance.textContent = `${balance.toFixed(2)} €`;
+};
