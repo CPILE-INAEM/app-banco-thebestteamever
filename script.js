@@ -61,7 +61,7 @@ const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
-//init dara
+//init data
 const createUsernames = () => {
   accounts.forEach((account) => {
     account.username = account.owner
@@ -84,21 +84,99 @@ btnLogin.addEventListener("click", (e) => {
 
   //recorrer todos los accounts y buscar el que coincida con el username y luego comparar con el pin
 
-  const currentAcount = accounts.find(
+  const currentAccount = accounts.find(
     (account) => account.username === username
   );
 
   //Puede ser null si el usuario no existe
 
-  console.log(`Current account: ${currentAcount}`);
+  console.log(`Current account: ${currentAccount}`);
 
-  // "currentAcount && currentAcount.pin" es lo mismo que poner "currentAcount?.pin" (esta ultima version es la reducida )
+  // "currentAccount && currentAccount.pin" es lo mismo que poner "currentAccount?.pin" (esta ultima version es la reducida )
 
-  if (currentAcount?.pin === pin) {
+  if (currentAccount?.pin === pin) {
     console.log("Login correcto");
     labelWelcome.textContent = `Bienvenido ${
-      currentAcount.owner.split(" ")[0]
+      currentAccount.owner.split(" ")[0]
     }`;
     containerApp.style.opacity = 100;
+    inputLoginUsername.value = inputLoginPin.value = "";
+    inputLoginPin.blur();
+
+    //mostrar datos
+    updateUI(currentAccount);
+    const { movements } = currentAccount;
   }
 });
+
+const updateUI = (currentAccount) => {
+  //obtener movimientos
+  //const movements = currentAccount
+
+  // mostrar movimientos
+  displayMovements(currentAccount.movements);
+  //limpiar movimientos antiguos:
+  //document.querySelector(".movements").innerHTML = "";
+  //insertarlos con insert
+
+  //mostrar el balance
+  calcAndDisplayBalance(currentAccount.movements);
+  //mostrar el resumen
+  calcAndDisplaySummary(currentAccount);
+};
+//const displayMovements = (movements) => {
+//limpiar movimientos antiguos:
+//document.querySelector(".movements").innerHTML = "";
+//insertarlos con insertAdjacentHTML
+//comprobar si son positivos o negativos para la inserción
+
+// const movHTML = `<div class="movements__row">
+//                  <div class="movements__type movements__type--deposit">2 deposit</div>
+//                  <div class="movements__date">3 days ago</div>
+//                  <div class="movements__value">4 000€</div>
+//                  </div>`; // 4 movimientos
+//};
+const displayMovements = (movements) => {
+  containerMovements.innerHTML = "";
+  movements.forEach((mov, index) => {
+    const type = mov > 0 ? "deposit" : "withdrawal";
+    const html = `
+      <div class="movements__row">
+        <div class="movements__type movements__type--${type}">${
+      index + 1
+    } ${type}</div>
+        <div class="movements__value">${mov}€</div>
+      </div>
+    `;
+    containerMovements.insertAdjacentHTML("afterbegin", html);
+  });
+};
+
+const calcAndDisplayBalance = (movements) => {
+  const balance = movements.reduce((acc, mov) => acc + mov, 0);
+  labelBalance.textContent = `${balance.toFixed(2)}€`;
+};
+const calcAndDisplaySummary = (currentAccount) => {
+  const { movements } = currentAccount;
+
+  const income = movements
+    .filter((mov) => mov > 0)
+    .reduce((acc, mov) => acc + mov, 0);
+  labelSumIn.textContent = `${income.toFixed(2)}€`;
+
+  const out = movements
+    .filter((mov) => mov < 0)
+    .reduce((acc, mov) => acc + mov, 0);
+  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
+
+  //calculo de interes
+  //Teniendo en cuenta solo ingresos superiores a 100€
+  //y que el interes es de cada usuario
+  // de al menos 2€
+  const interest = movements
+    .filter((mov) => mov > 100)
+    .map((mov) => (mov * currentAccount.interestRate) / 100)
+    .filter((interest) => interest >= 2)
+    .reduce((acc, interest) => acc + interest, 0);
+  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+};
