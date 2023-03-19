@@ -33,6 +33,54 @@ const account4 = {
   pin: 4444,
 };
 
+//Añadimos objeto json :Implementar movimientos con un array de objetos predefinido
+const movements = [
+  {
+    date: "2021-01-01",
+    value: 3000,
+  },
+  {
+    date: "2021-01-02",
+    value: -2000,
+  },
+  {
+    date: "2021-01-03",
+    value: 1500,
+  },
+  {
+    date: "2021-01-04",
+    value: -4000,
+  },
+  {
+    date: "2021-01-05",
+    value: 5000,
+  },
+  {
+    date: "2021-01-06",
+    value: 3800,
+  },
+  {
+    date: "2021-01-07",
+    value: 5100,
+  },
+  {
+    date: "2021-01-08",
+    value: 8350,
+  },
+];
+const movementsWithDates = movements.map((movement) => {
+  return {
+    date: movement.date,
+    value: movement.value,
+  };
+});
+
+// Le damos el valor de los movimientos (que será el mismo para todos pero no apuntando al mismo objeto)
+account1.movements = movementsWithDates.slice();
+account2.movements = movementsWithDates.slice();
+account3.movements = movementsWithDates.slice();
+account4.movements = movementsWithDates.slice();
+
 const accounts = [account1, account2, account3, account4];
 
 // Elements
@@ -93,6 +141,7 @@ btnLogin.addEventListener("click", (e) => {
   console.log(`Current account: ${currentAccount}`);
 
   // "currentAccount && currentAccount.pin" es lo mismo que poner "currentAccount?.pin" (esta ultima version es la reducida )
+  let activeAccount = {};
 
   if (currentAccount?.pin === pin) {
     console.log("Login correcto");
@@ -103,6 +152,8 @@ btnLogin.addEventListener("click", (e) => {
     inputLoginUsername.value = inputLoginPin.value = "";
     inputLoginPin.blur();
 
+    activeAccount = currentAccount;
+
     //mostrar datos
     updateUI(currentAccount);
     const { movements } = currentAccount;
@@ -112,6 +163,8 @@ btnLogin.addEventListener("click", (e) => {
 const updateUI = (currentAccount) => {
   //obtener movimientos
   //const movements = currentAccount
+  const now = new Date();
+  const { movements } = currentAccount;
 
   // mostrar movimientos
   displayMovements(currentAccount.movements);
@@ -139,13 +192,14 @@ const updateUI = (currentAccount) => {
 const displayMovements = (movements) => {
   containerMovements.innerHTML = "";
   movements.forEach((mov, i) => {
-    const type = mov > 0 ? "deposit" : "withdrawal";
+    const type = mov.value > 0 ? "deposit" : "withdrawal";
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__value">${mov.toFixed(2)}€</div>
+        <div class="movements__date">${mov.date}€</div>
+        <div class="movements__value">${mov.value.toFixed(2)}€</div>
       </div>
     `;
     containerMovements.insertAdjacentHTML("afterbegin", html);
@@ -153,20 +207,21 @@ const displayMovements = (movements) => {
 };
 
 const calcAndDisplayBalance = (movements) => {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
+  const balance = movements.reduce((acc, mov) => acc + mov.value, 0);
   labelBalance.textContent = `${balance.toFixed(2)}€`;
 };
 const calcAndDisplaySummary = (currentAccount) => {
   const { movements } = currentAccount;
 
   const income = movements
-    .filter((mov) => mov > 0)
-    .reduce((acc, mov) => acc + mov, 0);
+
+    .filter((mov) => mov.value > 0)
+    .reduce((acc, mov) => acc + mov.value, 0);
   labelSumIn.textContent = `${income.toFixed(2)}€`;
 
   const out = movements
-    .filter((mov) => mov < 0)
-    .reduce((acc, mov) => acc + mov, 0);
+    .filter((mov) => mov.value < 0)
+    .reduce((acc, mov) => acc + mov.value, 0);
   labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
 
   //calculo de interes
@@ -174,9 +229,9 @@ const calcAndDisplaySummary = (currentAccount) => {
   //y que el interes es de cada usuario
   // de al menos 2€
   const interest = movements
-    .filter((mov) => mov > 100)
-    .map((mov) => (mov * currentAccount.interestRate) / 100)
-    .filter((interest) => interest >= 2)
-    .reduce((acc, interest) => acc + interest, 0);
+    .filter((mov) => mov.value > 100)
+    .map((mov) => (mov.value * currentAccount.interestRate) / 100)
+    .filter((int) => int >= 2)
+    .reduce((acc, int) => acc + int, 0);
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
