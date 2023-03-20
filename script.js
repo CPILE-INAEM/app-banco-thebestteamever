@@ -158,6 +158,8 @@ btnLogin.addEventListener("click", (e) => {
       return acc + movement.value;
     }, 0);
     labelBalance.textContent = `${balance.toFixed(2)}€`;
+    // Llama a startTimer al hacer login para iniciar el contador
+    startTimer();
   }
 });
 
@@ -172,7 +174,6 @@ const updateUI = (currentAccount) => {
   //limpiar movimientos antiguos:
   //document.querySelector(".movements").innerHTML = "";
   //insertarlos con insert
-
   //mostrar el balance
   calcAndDisplayBalance(currentAccount.movements);
   //mostrar el resumen
@@ -203,7 +204,6 @@ const calcAndDisplaySummary = (currentAccount) => {
   const { movements } = currentAccount;
 
   const income = movements
-
     .filter((mov) => mov.value > 0)
     .reduce((acc, mov) => acc + mov.value, 0);
   labelSumIn.textContent = `${income.toFixed(2)}€`;
@@ -277,3 +277,59 @@ btnLoan.addEventListener("click", (e) => {
   alert("Préstamo solicitado con éxito");
   updateUI(activeAccount);
 });
+
+//FUNCIÓN SORT
+let sortAsc = false;
+
+// Función auxiliar para convertir fechas a objetos Date
+const toDate = (dateStr) => new Date(dateStr);
+
+// Función de ordenar
+const fnSort = () => {
+  const { movements } = activeAccount;
+  sortAsc = !sortAsc; // Cambiar orden de clasificación
+  movements.sort((a, b) =>
+    sortAsc ? toDate(a.date) - toDate(b.date) : toDate(b.date) - toDate(a.date)
+  );
+  displayMovements(movements);
+};
+
+// Listener para el botón de ordenar
+btnSort.addEventListener("click", (e) => {
+  e.preventDefault();
+  fnSort();
+});
+
+//FUNCION LOGOUT
+// Define la variable para el tiempo restante
+let timer = 5 * 60; // 5 minutos en segundos
+// Función para actualizar el contador cada segundo
+function startTimer() {
+  if (timer > 0) {
+    // Calcula los minutos y segundos restantes
+    const minutes = Math.floor(timer / 60);
+    const seconds = timer % 60;
+    // Actualiza el texto del elemento
+    labelTimer.textContent = `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+    // Resta 1 segundo del tiempo restante
+    timer--;
+    // Llama a la función de nuevo después de 1 segundo
+    setTimeout(startTimer, 1000);
+  } else {
+    // Si el tiempo ha expirado, llama a la función de logout
+    logout();
+  }
+}
+// Función para hacer logout
+function logout() {
+  activeAccount = {};
+  inputLoginUsername.value = inputLoginPin.value = "";
+  containerApp.style.opacity = 0;
+  labelWelcome.textContent = "";
+}
+// Detiene el contador si el usuario hace logout manualmente antes de que expire el tiempo
+function stopTimer() {
+  clearTimeout();
+}
