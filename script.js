@@ -225,7 +225,7 @@ const calcAndDisplaySummary = (currentAccount) => {
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
 
-//IMPLEMENTAMOS LAS TRANSFERENCIAS
+//FUNCION TRANSFERENCIAS
 // Agregar event listener al botón de transferencia
 btnTransfer.addEventListener("click", (e) => {
   e.preventDefault(); // Prevenir comportamiento por defecto del formulario
@@ -267,5 +267,26 @@ btnTransfer.addEventListener("click", (e) => {
   inputTransferTo.value = inputTransferAmount.value = "";
   alert("Transferencia realizada con exito");
   // Actualizar la página
+  updateUI(activeAccount);
+});
+
+// FUNCIÓN PRÉSTAMOS
+btnLoan.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  // importe préstamo
+  const loan = Number(inputLoanAmount.value);
+
+  if (loan <= 0) {
+    alert("No ha ingresado un valor válido");
+    return;
+  }
+  activeAccount.movements.push({
+    date: new Date().toISOString().split("T")[0],
+    value: loan,
+  });
+
+  inputLoanAmount.value = "";
+  alert("Préstamo solicitado con éxito");
   updateUI(activeAccount);
 });
