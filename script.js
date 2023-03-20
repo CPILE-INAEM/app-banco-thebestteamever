@@ -333,3 +333,6 @@ function logout() {
 function stopTimer() {
   clearTimeout();
 }
+//FECHA ACTUAL
+const currentDate = new Date();
+labelDate.textContent = currentDate.toLocaleDateString();
