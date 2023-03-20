@@ -225,48 +225,35 @@ const calcAndDisplaySummary = (currentAccount) => {
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
 
-//FUNCION TRANSFERENCIAS
-// Agregar event listener al botón de transferencia
+// FUNCION TRANSFERENCIAS
 btnTransfer.addEventListener("click", (e) => {
-  e.preventDefault(); // Prevenir comportamiento por defecto del formulario
+  e.preventDefault();
 
   const transferTo = inputTransferTo.value;
   const transferAmount = Number(inputTransferAmount.value);
 
-  // Validar que el usuario destino exista
   const recipient = accounts.find((account) => account.owner === transferTo);
   const balance = activeAccount.movements.reduce(
     (acc, mov) => acc + mov.value,
     0
   );
 
-  if (!recipient) {
-    alert("El usuario destino no existe.");
-    return;
-  }
-  // Verificar que la cantidad a transferir sea mayor que cero
-  if (transferAmount <= 0) {
-    alert("Ingrese una cantidad válida para transferir.");
-    return;
-  }
-  // Validar que el usuario origen tenga suficiente dinero para realizar la transferencia
-  if (transferAmount > balance) {
-    alert("No tienes suficiente dinero en tu cuenta.");
-    return;
-  }
-  // Realizar la transferencia
+  if (!recipient) return alert("El usuario destino no existe.");
+  if (transferAmount <= 0)
+    return alert("Ingrese una cantidad válida para transferir.");
+  if (transferAmount > balance)
+    return alert("No tienes suficiente dinero en tu cuenta.");
 
-  const movement = {};
-  const movementTo = {};
-  movement.date = movementTo.date = new Date().toISOString().split("T")[0];
-  movement.value = -transferAmount;
-  movementTo.value = transferAmount;
-  recipient.movements.push(movementTo);
-  activeAccount.movements.push(movement);
-  //vaciar campos
+  recipient.movements.push({
+    date: new Date().toISOString().split("T")[0],
+    value: transferAmount,
+  });
+  activeAccount.movements.push({
+    date: new Date().toISOString().split("T")[0],
+    value: -transferAmount,
+  });
   inputTransferTo.value = inputTransferAmount.value = "";
-  alert("Transferencia realizada con exito");
-  // Actualizar la página
+  alert("Transferencia realizada con éxito");
   updateUI(activeAccount);
 });
 
