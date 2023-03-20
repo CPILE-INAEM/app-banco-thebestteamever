@@ -121,7 +121,7 @@ const createUsernames = () => {
 };
 
 createUsernames();
-
+let activeAccount = {};
 btnLogin.addEventListener("click", (e) => {
   // Prevent form from submitting (Impedir que se envíe el formulario)
   e.preventDefault();
@@ -141,7 +141,6 @@ btnLogin.addEventListener("click", (e) => {
   console.log(`Current account: ${currentAccount}`);
 
   // "currentAccount && currentAccount.pin" es lo mismo que poner "currentAccount?.pin" (esta ultima version es la reducida )
-  let activeAccount = {};
 
   if (currentAccount?.pin === pin) {
     console.log("Login correcto");
@@ -151,12 +150,14 @@ btnLogin.addEventListener("click", (e) => {
     containerApp.style.opacity = 100;
     inputLoginUsername.value = inputLoginPin.value = "";
     inputLoginPin.blur();
-
     activeAccount = currentAccount;
-
     //mostrar datos
     updateUI(currentAccount);
     const { movements } = currentAccount;
+    const balance = movements.reduce((acc, movement) => {
+      return acc + movement.value;
+    }, 0);
+    labelBalance.textContent = `${balance.toFixed(2)}€`;
   }
 });
 
@@ -177,18 +178,6 @@ const updateUI = (currentAccount) => {
   //mostrar el resumen
   calcAndDisplaySummary(currentAccount);
 };
-//const displayMovements = (movements) => {
-//limpiar movimientos antiguos:
-//document.querySelector(".movements").innerHTML = "";
-//insertarlos con insertAdjacentHTML
-//comprobar si son positivos o negativos para la inserción
-
-// const movHTML = `<div class="movements__row">
-//                  <div class="movements__type movements__type--deposit">2 deposit</div>
-//                  <div class="movements__date">3 days ago</div>
-//                  <div class="movements__value">4 000€</div>
-//                  </div>`; // 4 movimientos
-//};
 const displayMovements = (movements) => {
   containerMovements.innerHTML = "";
   movements.forEach((mov, i) => {
@@ -198,7 +187,7 @@ const displayMovements = (movements) => {
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__date">${mov.date}€</div>
+        <div class="movements__date">${mov.date}</div>
         <div class="movements__value">${mov.value.toFixed(2)}€</div>
       </div>
     `;
@@ -235,3 +224,48 @@ const calcAndDisplaySummary = (currentAccount) => {
     .reduce((acc, int) => acc + int, 0);
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
+
+//IMPLEMENTAMOS LAS TRANSFERENCIAS
+// Agregar event listener al botón de transferencia
+btnTransfer.addEventListener("click", (e) => {
+  e.preventDefault(); // Prevenir comportamiento por defecto del formulario
+
+  const transferTo = inputTransferTo.value;
+  const transferAmount = Number(inputTransferAmount.value);
+
+  // Validar que el usuario destino exista
+  const recipient = accounts.find((account) => account.owner === transferTo);
+  const balance = activeAccount.movements.reduce(
+    (acc, mov) => acc + mov.value,
+    0
+  );
+
+  if (!recipient) {
+    alert("El usuario destino no existe.");
+    return;
+  }
+  // Verificar que la cantidad a transferir sea mayor que cero
+  if (transferAmount <= 0) {
+    alert("Ingrese una cantidad válida para transferir.");
+    return;
+  }
+  // Validar que el usuario origen tenga suficiente dinero para realizar la transferencia
+  if (transferAmount > balance) {
+    alert("No tienes suficiente dinero en tu cuenta.");
+    return;
+  }
+  // Realizar la transferencia
+
+  const movement = {};
+  const movementTo = {};
+  movement.date = movementTo.date = new Date().toISOString().split("T")[0];
+  movement.value = -transferAmount;
+  movementTo.value = transferAmount;
+  recipient.movements.push(movementTo);
+  activeAccount.movements.push(movement);
+  //vaciar campos
+  inputTransferTo.value = inputTransferAmount.value = "";
+  alert("Transferencia realizada con exito");
+  // Actualizar la página
+  updateUI(activeAccount);
+});
