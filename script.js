@@ -1,7 +1,5 @@
 "use strict";
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
 // BANKIST APP
 
 // Data
@@ -238,11 +236,11 @@ btnTransfer.addEventListener("click", (e) => {
     0
   );
 
-  if (!recipient) return alert("El usuario destino no existe.");
+  if (!recipient) return swal("El usuario destino no existe.", "", "error");
   if (transferAmount <= 0)
-    return alert("Ingrese una cantidad válida para transferir.");
+    return swal("Ingrese una cantidad válida para transferir.", "", "error");
   if (transferAmount > balance)
-    return alert("No tienes suficiente dinero en tu cuenta.");
+    return swal("No tienes suficiente dinero en tu cuenta.", "", "error");
 
   recipient.movements.push({
     date: new Date().toISOString().split("T")[0],
@@ -253,7 +251,11 @@ btnTransfer.addEventListener("click", (e) => {
     value: -transferAmount,
   });
   inputTransferTo.value = inputTransferAmount.value = "";
-  alert("Transferencia realizada con éxito");
+  swal({
+    title: `Transferencia de ${transferAmount} €`,
+    text: `a ${transferTo} realizada con exito`,
+    icon: "success",
+  });
   updateUI(activeAccount);
 });
 
@@ -265,7 +267,11 @@ btnLoan.addEventListener("click", (e) => {
   const loan = Number(inputLoanAmount.value);
 
   if (loan <= 0) {
-    alert("No ha ingresado un valor válido");
+    swal({
+      title: `Prestamo de: ${loan} €`,
+      text: "No ha ingresado un valor válido",
+      icon: "success",
+    });
     return;
   }
   activeAccount.movements.push({
@@ -274,7 +280,11 @@ btnLoan.addEventListener("click", (e) => {
   });
 
   inputLoanAmount.value = "";
-  alert("Préstamo solicitado con éxito");
+  swal({
+    title: `Prestamo de: ${loan} €`,
+    text: "solicitado con éxito",
+    icon: "success",
+  });
   updateUI(activeAccount);
 });
 
