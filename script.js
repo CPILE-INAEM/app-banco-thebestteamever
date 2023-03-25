@@ -32,31 +32,24 @@ const account4 = {
 };
 
 // FUNCION PARA GENERAR MOVIMIENTOS ALEATORIOS
-function generateMovements(numMovements, startDate, endDate) {
-  const movements = [];
-  for (let i = 0; i < numMovements; i++) {
+function generateMovements(length, startDate, endDate) {
+  return Array.from({ length }, () => {
     const date = new Date(
       startDate.getTime() +
         Math.random() * (endDate.getTime() - startDate.getTime())
     )
       .toISOString()
       .split("T")[0];
-    const value = Math.floor(Math.random() * (5000 - -2000 + 1)) + -2000;
-    movements.push({ date, value });
-  }
-  return movements;
-}
-const accounts = [account1, account2, account3, account4];
-for (let i = 0; i < accounts.length; i++) {
-  const movements = generateMovements(10, new Date(2020, 0, 1), new Date());
-  const account = accounts[i];
-  account.movements = movements.map((movement) => {
-    return {
-      date: movement.date,
-      value: movement.value,
-    };
+    const value = Math.floor(Math.random() * (5000 - -5000 + 1)) + -5000;
+    return { date, value };
   });
 }
+
+const accounts = [account1, account2, account3, account4];
+accounts.forEach((account) => {
+  const movements = generateMovements(10, new Date(2020, 1, 1), new Date());
+  account.movements = movements.map(({ date, value }) => ({ date, value }));
+});
 
 // Elements
 const labelWelcome = document.querySelector(".welcome");
