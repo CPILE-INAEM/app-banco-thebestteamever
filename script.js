@@ -1,7 +1,6 @@
 "use strict";
 
 // BANKIST APP
-
 // Data
 const account1 = {
   owner: "Juan Sánchez",
@@ -40,7 +39,7 @@ function generateMovements(length, startDate, endDate) {
     )
       .toISOString()
       .split("T")[0];
-    const value = Math.floor(Math.random() * (5000 - -5000 + 1)) + -5000;
+    const value = Math.floor(Math.random() * (5000 - -2000 + 1)) + -2000;
     return { date, value };
   });
 }
@@ -308,14 +307,23 @@ function startTimer() {
 function logout() {
   activeAccount = {};
   inputLoginUsername.value = inputLoginPin.value = "";
-  containerApp.style.opacity = 0;
-  labelWelcome.textContent = "";
+  containerApp.style.display = "none";
+  labelWelcome.textContent = "Log in to get started";
   location.reload();
 }
 // Detiene el contador si el usuario hace logout manualmente antes de que expire el tiempo
 function stopTimer() {
   clearTimeout();
 }
+//Boton logout
+btnClose.addEventListener("click", (e) => {
+  e.preventDefault();
+  swal("Sesión terminada, gracias por usar nuestros servicios").then(() => {
+    location.reload();
+  });
+  console.log("Cerrar sesión");
+});
+
 //FECHA ACTUAL
 const currentDate = new Date();
 labelDate.textContent = currentDate.toLocaleDateString();
