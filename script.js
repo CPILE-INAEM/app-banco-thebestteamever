@@ -31,56 +31,32 @@ const account4 = {
   pin: 4444,
 };
 
-//Añadimos objeto json :Implementar movimientos con un array de objetos predefinido
-const movements = [
-  {
-    date: "2021-01-01",
-    value: 3000,
-  },
-  {
-    date: "2021-01-02",
-    value: -2000,
-  },
-  {
-    date: "2021-01-03",
-    value: 1500,
-  },
-  {
-    date: "2021-01-04",
-    value: -4000,
-  },
-  {
-    date: "2021-01-05",
-    value: 5000,
-  },
-  {
-    date: "2021-01-06",
-    value: 3800,
-  },
-  {
-    date: "2021-01-07",
-    value: 5100,
-  },
-  {
-    date: "2021-01-08",
-    value: 8350,
-  },
-];
-
-const movementsWithDates = movements.map((movement) => {
-  return {
-    date: movement.date,
-    value: movement.value,
-  };
-});
-
-// Le damos el valor de los movimientos (que será el mismo para todos pero no apuntando al mismo objeto)
-account1.movements = movementsWithDates.slice();
-account2.movements = movementsWithDates.slice();
-account3.movements = movementsWithDates.slice();
-account4.movements = movementsWithDates.slice();
-
+// FUNCION PARA GENERAR MOVIMIENTOS ALEATORIOS
+function generateMovements(numMovements, startDate, endDate) {
+  const movements = [];
+  for (let i = 0; i < numMovements; i++) {
+    const date = new Date(
+      startDate.getTime() +
+        Math.random() * (endDate.getTime() - startDate.getTime())
+    )
+      .toISOString()
+      .split("T")[0];
+    const value = Math.floor(Math.random() * (5000 - -2000 + 1)) + -2000;
+    movements.push({ date, value });
+  }
+  return movements;
+}
 const accounts = [account1, account2, account3, account4];
+for (let i = 0; i < accounts.length; i++) {
+  const movements = generateMovements(10, new Date(2020, 0, 1), new Date());
+  const account = accounts[i];
+  account.movements = movements.map((movement) => {
+    return {
+      date: movement.date,
+      value: movement.value,
+    };
+  });
+}
 
 // Elements
 const labelWelcome = document.querySelector(".welcome");
