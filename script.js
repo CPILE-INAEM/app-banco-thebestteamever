@@ -66,6 +66,7 @@ const movements = [
     value: 8350,
   },
 ];
+
 const movementsWithDates = movements.map((movement) => {
   return {
     date: movement.date,
@@ -160,14 +161,16 @@ btnLogin.addEventListener("click", (e) => {
     startTimer();
   }
 });
-
 const updateUI = (currentAccount) => {
   //obtener movimientos
-  //const movements = currentAccount
-  const now = new Date();
+  //Convertir la fecha del movimiento a un objeto Moment.js
+  activeAccount.movements.forEach(function (movement) {
+    var fechaActual = moment();
+    var fecha = moment(movement.date, "YYYYMMDD").fromNow(fechaActual);
+    movement.formattedDate = fecha;
+  });
   const { movements } = currentAccount;
 
-  // mostrar movimientos
   displayMovements(currentAccount.movements);
   //limpiar movimientos antiguos:
   //document.querySelector(".movements").innerHTML = "";
@@ -186,7 +189,7 @@ const displayMovements = (movements) => {
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__date">${mov.date}</div>
+        <div class="movements__date">${mov.formattedDate}</div>
         <div class="movements__value">${mov.value.toFixed(2)}€</div>
       </div>
     `;
