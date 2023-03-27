@@ -36,9 +36,7 @@ function generateMovements(length, startDate, endDate) {
     const date = new Date(
       startDate.getTime() +
         Math.random() * (endDate.getTime() - startDate.getTime())
-    )
-      .toISOString()
-      .split("T")[0];
+    ).toISOString();
     const value = Math.floor(Math.random() * (5000 - -2000 + 1)) + -2000;
     return { date, value };
   });
@@ -214,11 +212,11 @@ btnTransfer.addEventListener("click", (e) => {
     return swal("No tienes suficiente dinero en tu cuenta.", "", "error");
 
   recipient.movements.push({
-    date: new Date().toISOString().split("T")[0],
+    date: new Date().toISOString(),
     value: transferAmount,
   });
   activeAccount.movements.push({
-    date: new Date().toISOString().split("T")[0],
+    date: new Date().toISOString(),
     value: -transferAmount,
   });
   inputTransferTo.value = inputTransferAmount.value = "";
@@ -246,7 +244,7 @@ btnLoan.addEventListener("click", (e) => {
     return;
   }
   activeAccount.movements.push({
-    date: new Date().toISOString().split("T")[0],
+    date: new Date().toISOString(),
     value: loan,
   });
 
@@ -307,9 +305,9 @@ function startTimer() {
 function logout() {
   activeAccount = {};
   inputLoginUsername.value = inputLoginPin.value = "";
-  containerApp.style.display = "none";
+  containerApp.style.opacity = 0;
   labelWelcome.textContent = "Log in to get started";
-  location.reload();
+  //location.reload();
 }
 // Detiene el contador si el usuario hace logout manualmente antes de que expire el tiempo
 function stopTimer() {
@@ -319,7 +317,8 @@ function stopTimer() {
 btnClose.addEventListener("click", (e) => {
   e.preventDefault();
   swal("Sesión terminada, gracias por usar nuestros servicios").then(() => {
-    location.reload();
+    logout();
+    // location.reload();
   });
   console.log("Cerrar sesión");
 });
