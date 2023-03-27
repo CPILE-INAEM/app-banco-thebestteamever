@@ -1,9 +1,6 @@
 "use strict";
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
 // BANKIST APP
-
 // Data
 const account1 = {
   owner: "Juan Sánchez",
@@ -33,7 +30,25 @@ const account4 = {
   pin: 4444,
 };
 
+// FUNCION PARA GENERAR MOVIMIENTOS ALEATORIOS
+function generateMovements(length, startDate, endDate) {
+  return Array.from({ length }, () => {
+    const date = new Date(
+      startDate.getTime() +
+        Math.random() * (endDate.getTime() - startDate.getTime())
+    )
+      .toISOString()
+      .split("T")[0];
+    const value = Math.floor(Math.random() * (5000 - -2000 + 1)) + -2000;
+    return { date, value };
+  });
+}
+
 const accounts = [account1, account2, account3, account4];
+accounts.forEach((account) => {
+  const movements = generateMovements(10, new Date(2020, 1, 1), new Date());
+  account.movements = movements.map(({ date, value }) => ({ date, value }));
+});
 
 // Elements
 const labelWelcome = document.querySelector(".welcome");
@@ -73,7 +88,7 @@ const createUsernames = () => {
 };
 
 createUsernames();
-
+let activeAccount = {};
 btnLogin.addEventListener("click", (e) => {
   // Prevent form from submitting (Impedir que se envíe el formulario)
   e.preventDefault();
@@ -102,50 +117,48 @@ btnLogin.addEventListener("click", (e) => {
     containerApp.style.opacity = 100;
     inputLoginUsername.value = inputLoginPin.value = "";
     inputLoginPin.blur();
-
+    activeAccount = currentAccount;
     //mostrar datos
     updateUI(currentAccount);
     const { movements } = currentAccount;
+    const balance = movements.reduce((acc, movement) => {
+      return acc + movement.value;
+    }, 0);
+    labelBalance.textContent = `${balance.toFixed(2)}€`;
+    // Llama a startTimer al hacer login para iniciar el contador
+    startTimer();
   }
 });
-
 const updateUI = (currentAccount) => {
   //obtener movimientos
-  //const movements = currentAccount
+  //Convertir la fecha del movimiento a un objeto Moment.js
+  activeAccount.movements.forEach(function (movement) {
+    var fechaActual = moment();
+    var fecha = moment(movement.date, "YYYYMMDD").fromNow(fechaActual);
+    movement.formattedDate = fecha;
+  });
+  const { movements } = currentAccount;
 
-  // mostrar movimientos
   displayMovements(currentAccount.movements);
   //limpiar movimientos antiguos:
   //document.querySelector(".movements").innerHTML = "";
   //insertarlos con insert
-
   //mostrar el balance
   calcAndDisplayBalance(currentAccount.movements);
   //mostrar el resumen
   calcAndDisplaySummary(currentAccount);
 };
-//const displayMovements = (movements) => {
-//limpiar movimientos antiguos:
-//document.querySelector(".movements").innerHTML = "";
-//insertarlos con insertAdjacentHTML
-//comprobar si son positivos o negativos para la inserción
-
-// const movHTML = `<div class="movements__row">
-//                  <div class="movements__type movements__type--deposit">2 deposit</div>
-//                  <div class="movements__date">3 days ago</div>
-//                  <div class="movements__value">4 000€</div>
-//                  </div>`; // 4 movimientos
-//};
 const displayMovements = (movements) => {
   containerMovements.innerHTML = "";
   movements.forEach((mov, i) => {
-    const type = mov > 0 ? "deposit" : "withdrawal";
+    const type = mov.value > 0 ? "deposit" : "withdrawal";
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__value">${mov.toFixed(2)}€</div>
+        <div class="movements__date">${mov.formattedDate}</div>
+        <div class="movements__value">${mov.value.toFixed(2)}€</div>
       </div>
     `;
     containerMovements.insertAdjacentHTML("afterbegin", html);
@@ -153,20 +166,20 @@ const displayMovements = (movements) => {
 };
 
 const calcAndDisplayBalance = (movements) => {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
+  const balance = movements.reduce((acc, mov) => acc + mov.value, 0);
   labelBalance.textContent = `${balance.toFixed(2)}€`;
 };
 const calcAndDisplaySummary = (currentAccount) => {
   const { movements } = currentAccount;
 
   const income = movements
-    .filter((mov) => mov > 0)
-    .reduce((acc, mov) => acc + mov, 0);
+    .filter((mov) => mov.value > 0)
+    .reduce((acc, mov) => acc + mov.value, 0);
   labelSumIn.textContent = `${income.toFixed(2)}€`;
 
   const out = movements
-    .filter((mov) => mov < 0)
-    .reduce((acc, mov) => acc + mov, 0);
+    .filter((mov) => mov.value < 0)
+    .reduce((acc, mov) => acc + mov.value, 0);
   labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
 
   //calculo de interes
@@ -174,9 +187,143 @@ const calcAndDisplaySummary = (currentAccount) => {
   //y que el interes es de cada usuario
   // de al menos 2€
   const interest = movements
-    .filter((mov) => mov > 100)
-    .map((mov) => (mov * currentAccount.interestRate) / 100)
-    .filter((interest) => interest >= 2)
-    .reduce((acc, interest) => acc + interest, 0);
+    .filter((mov) => mov.value > 100)
+    .map((mov) => (mov.value * currentAccount.interestRate) / 100)
+    .filter((int) => int >= 2)
+    .reduce((acc, int) => acc + int, 0);
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
+
+// FUNCION TRANSFERENCIAS
+btnTransfer.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  const transferTo = inputTransferTo.value;
+  const transferAmount = Number(inputTransferAmount.value);
+
+  const recipient = accounts.find((account) => account.owner === transferTo);
+  const balance = activeAccount.movements.reduce(
+    (acc, mov) => acc + mov.value,
+    0
+  );
+
+  if (!recipient) return swal("El usuario destino no existe.", "", "error");
+  if (transferAmount <= 0)
+    return swal("Ingrese una cantidad válida para transferir.", "", "error");
+  if (transferAmount > balance)
+    return swal("No tienes suficiente dinero en tu cuenta.", "", "error");
+
+  recipient.movements.push({
+    date: new Date().toISOString().split("T")[0],
+    value: transferAmount,
+  });
+  activeAccount.movements.push({
+    date: new Date().toISOString().split("T")[0],
+    value: -transferAmount,
+  });
+  inputTransferTo.value = inputTransferAmount.value = "";
+  swal({
+    title: `Transferencia de ${transferAmount} €`,
+    text: `a ${transferTo} realizada con exito`,
+    icon: "success",
+  });
+  updateUI(activeAccount);
+});
+
+// FUNCIÓN PRÉSTAMOS
+btnLoan.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  // importe préstamo
+  const loan = Number(inputLoanAmount.value);
+
+  if (loan <= 0) {
+    swal({
+      title: `Prestamo de: ${loan} €`,
+      text: "No ha ingresado un valor válido",
+      icon: "success",
+    });
+    return;
+  }
+  activeAccount.movements.push({
+    date: new Date().toISOString().split("T")[0],
+    value: loan,
+  });
+
+  inputLoanAmount.value = "";
+  swal({
+    title: `Prestamo de: ${loan} €`,
+    text: "solicitado con éxito",
+    icon: "success",
+  });
+  updateUI(activeAccount);
+});
+
+//FUNCIÓN SORT
+let sortAsc = false;
+
+// Función auxiliar para convertir fechas a objetos Date
+const toDate = (dateStr) => new Date(dateStr);
+
+// Función de ordenar
+const fnSort = () => {
+  const { movements } = activeAccount;
+  sortAsc = !sortAsc; // Cambiar orden de clasificación
+  movements.sort((a, b) =>
+    sortAsc ? toDate(a.date) - toDate(b.date) : toDate(b.date) - toDate(a.date)
+  );
+  displayMovements(movements);
+};
+
+// Listener para el botón de ordenar
+btnSort.addEventListener("click", (e) => {
+  e.preventDefault();
+  fnSort();
+});
+
+//FUNCION LOGOUT
+// Define la variable para el tiempo restante
+let timer = 5 * 60; // 5 minutos en segundos
+// Función para actualizar el contador cada segundo
+function startTimer() {
+  if (timer > 0) {
+    // Calcula los minutos y segundos restantes
+    const minutes = Math.floor(timer / 60);
+    const seconds = timer % 60;
+    // Actualiza el texto del elemento
+    labelTimer.textContent = `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+    // Resta 1 segundo del tiempo restante
+    timer--;
+    // Llama a la función de nuevo después de 1 segundo
+    setTimeout(startTimer, 1000);
+  } else {
+    // Si el tiempo ha expirado, llama a la función de logout
+    logout();
+  }
+}
+// Función para hacer logout
+function logout() {
+  activeAccount = {};
+  inputLoginUsername.value = inputLoginPin.value = "";
+  containerApp.style.display = "none";
+  labelWelcome.textContent = "Log in to get started";
+  location.reload();
+}
+// Detiene el contador si el usuario hace logout manualmente antes de que expire el tiempo
+function stopTimer() {
+  clearTimeout();
+}
+//Boton logout
+btnClose.addEventListener("click", (e) => {
+  e.preventDefault();
+  swal("Sesión terminada, gracias por usar nuestros servicios").then(() => {
+    location.reload();
+  });
+  console.log("Cerrar sesión");
+});
+
+//FECHA ACTUAL
+const currentDate = new Date();
+labelDate.textContent = currentDate.toLocaleDateString();
