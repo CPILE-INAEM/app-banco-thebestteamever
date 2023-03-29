@@ -132,7 +132,7 @@ const updateUI = (currentAccount) => {
   //Convertir la fecha del movimiento a un objeto Moment.js
   activeAccount.movements.forEach(function (movement) {
     var fechaActual = moment();
-    var fecha = moment(movement.date, "YYYYMMDD").fromNow(fechaActual);
+    var fecha = moment(movement.date).fromNow(fechaActual);
     movement.formattedDate = fecha;
   });
   const { movements } = currentAccount;
