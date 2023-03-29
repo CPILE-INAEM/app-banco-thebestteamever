@@ -307,7 +307,7 @@ function logout() {
   inputLoginUsername.value = inputLoginPin.value = "";
   containerApp.style.opacity = 0;
   labelWelcome.textContent = "Log in to get started";
-  //location.reload();
+  location.reload();
 }
 // Detiene el contador si el usuario hace logout manualmente antes de que expire el tiempo
 function stopTimer() {
